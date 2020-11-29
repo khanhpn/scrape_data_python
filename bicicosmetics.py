@@ -15,9 +15,13 @@ class WriteCsvFile:
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
             for item in self.data:
-                writer.writerow({'TenSP': item["TenSP"], 'Ma': item["sku"], 'Danh Muc': item["category"],
-                                 'Xuat Xu': item["original"], 'Thuong Hieu': item["brand"], 'Giam gia': item["sale_price"],
-                                 'Gia ban': item["price_original"], 'Image': item["images"]})
+                try:
+                    writer.writerow({'TenSP': item["TenSP"], 'Ma': item["sku"], 'Danh Muc': item["category"],
+                                     'Xuat Xu': item["original"], 'Thuong Hieu': item["brand"], 'Giam gia': item["sale_price"],
+                                     'Gia ban': item["price_original"], 'Image': item["images"]})
+                except:
+                    print(item)
+                    continue
         print("Finish write file csv....")
 
 
@@ -159,7 +163,7 @@ url = "https://bicicosmetics.vn"
 categories = [url + '/collections/makeup',
               url + '/collections/skincare']
 base = Bicicosmetics(url, categories)
-data = [base.main()]
+data = base.main()
 
 file_csv = WriteCsvFile(data)
 file_csv.start()
