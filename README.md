@@ -6,6 +6,14 @@ https://www.python.org/downloads/windows/
 
 ## Install BeautifulSoup and request
 
+### Install on windows 10
+```
+python -m pip install requests
+pip install beautifulsoup4
+
+```
+
+### Install on macos
 ```
 pip install beautifulsoup4 request
 ```
