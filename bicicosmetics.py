@@ -110,7 +110,7 @@ class Bicicosmetics:
                 'a[class="product-gallery__thumb-placeholder"]')
             image_list = []
             for image in images:
-                image_list.append(self.url + image.img["src"])
+                image_list.append("https:" + image.img["data-image"])
             product_detail["images"] = ",".join(image_list)
 
             product_detail["TenSP"] = detail.h1.string
@@ -147,7 +147,7 @@ class Bicicosmetics:
     def main(self):
         products = self.get_products_paging()
         products_link = self.get_link_paging_products(products)
-        # return self.parse_product("https://bicicosmetics.vn/products/mat-na-ngu-dr-jart-dermask-sleeping-mask")
+        # return [self.parse_product("https://bicicosmetics.vn/products/mat-na-ngu-dr-jart-dermask-sleeping-mask")]
         arr_products = []
         for products in products_link:
             for product in products:
@@ -160,8 +160,7 @@ class Bicicosmetics:
 
 
 url = "https://bicicosmetics.vn"
-categories = [url + '/collections/makeup',
-              url + '/collections/skincare']
+categories = [url + '/collections/hang-moi-ve']
 base = Bicicosmetics(url, categories)
 data = base.main()
 
