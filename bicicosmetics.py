@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup  # using this lib to scrape data
 import requests
 import csv
+import json
 
 
 class WriteCsvFile:
@@ -23,6 +24,16 @@ class WriteCsvFile:
                     print(item)
                     continue
         print("Finish write file csv....")
+
+
+class WriteToJson:
+    def __init__(self, data):
+        self.data = data
+
+    def start(self):
+        print("Starting write file json....")
+        with open('data.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
 
 
 class Bicicosmetics:
@@ -80,18 +91,24 @@ class Bicicosmetics:
     # parse price
     def parse_price(self, detail, product_detail):
         original_price = detail.find(id='price-preview')
-        if original_price.find('del') == None:
-            product_detail["price_original"] = ''
-        else:
-            product_detail["price_original"] = original_price.find(
-                'del').string
+        if original_price.find('del') == None and len(detail.select('.product-price > .pro-price')) == 0:
+            product_detail["price"] = None
+            return
 
-        if len(detail.select('.product-price > .pro-sale')) == 0:
-            product_detail["sale_price"] = detail.select(
+        if len(detail.select('.product-price > .pro-price')) >= 0:
+            product_detail["price"] = detail.select(
                 '.product-price > .pro-price')[0].string
         else:
-            sale_price = detail.select('.product-price > .pro-sale')[0].text
-            product_detail["sale_price"] = sale_price
+            product_detail["price"] = original_price.find(
+                'del').string
+
+    def get_category(self, detail, product_detail):
+        original_category = detail.select(
+            "ol.breadcrumb > li > a > span", {"itemprop": "name"})[1]
+        if original_category != None:
+            product_detail["original_category"] = original_category.string
+        else:
+            product_detail["original_category"] = None
 
     # parse a product to get detail
     def parse_product(self, product):
@@ -105,6 +122,16 @@ class Bicicosmetics:
             info = detail.find("div", attrs={"class", "product_meta_wrapper"})
 
             self.parse_price(detail, product_detail)
+            if product_detail["price"] == None:
+                return
+
+            self.get_category(detail, product_detail)
+
+            if product_detail["original_category"] == None:
+                print("**********************************")
+                print("This link have not category %s" % product)
+                print("**********************************")
+                return
 
             images = detail.select(
                 'a[class="product-gallery__thumb-placeholder"]')
@@ -113,8 +140,8 @@ class Bicicosmetics:
                 image_list.append("https:" + image.img["data-image"])
             product_detail["images"] = ",".join(image_list)
 
-            product_detail["TenSP"] = detail.h1.string
-            product_detail["Ma"] = sku.string
+            product_detail["name"] = detail.h1.string
+            product_detail["Sku"] = sku.string
             obj_table = info.findChildren('table')[0]
 
             original = obj_table.find(
@@ -147,7 +174,7 @@ class Bicicosmetics:
     def main(self):
         products = self.get_products_paging()
         products_link = self.get_link_paging_products(products)
-        # return [self.parse_product("https://bicicosmetics.vn/products/mat-na-ngu-dr-jart-dermask-sleeping-mask")]
+        # return [self.parse_product("https://bicicosmetics.vn/products/nuoc-hoa-hong-klairs-supple-preparation-facial-toner")]
         arr_products = []
         for products in products_link:
             for product in products:
@@ -156,7 +183,28 @@ class Bicicosmetics:
                 except:
                     print(product)
                     continue
-        return arr_products
+
+        return self.format_json(arr_products)
+
+    def format_json(self, products):
+        print("**********************************************************")
+        print("Starting to filter and convert data to json")
+        object_products = []
+        # list categories
+        categories = list(set([product["original_category"]
+                               for product in products]))
+        object_products.append({"categories": categories})
+        for category in categories:
+            dic_category = {}
+            dic_category[category] = []
+            for product in products:
+                if product["original_category"] == category:
+                    dic_category[category].append(product)
+            object_products.append(dic_category)
+
+        print("End to filter and convert data to json")
+        print("**********************************************************")
+        return object_products
 
 
 url = "https://bicicosmetics.vn"
@@ -164,5 +212,8 @@ categories = [url + '/collections/hang-moi-ve']
 base = Bicicosmetics(url, categories)
 data = base.main()
 
-file_csv = WriteCsvFile(data)
-file_csv.start()
+file_json = WriteToJson(data)
+file_json.start()
+
+# file_csv = WriteCsvFile(data)
+# file_csv.start()
