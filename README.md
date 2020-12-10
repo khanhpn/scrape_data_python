@@ -6,6 +6,15 @@ https://www.python.org/downloads/windows/
 
 ## Install BeautifulSoup and request
 
+### Install on windows 10
+```
+python -m pip install requests
+pip install beautifulsoup4
+
+```
+Note: You might have to run your shell in Administrator mode by right-clicking on e.g. PowerShell and choose Run as Administrator
+
+### Install on macos
 ```
 pip install beautifulsoup4 request
 ```
