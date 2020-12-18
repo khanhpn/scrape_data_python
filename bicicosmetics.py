@@ -55,7 +55,7 @@ class Bicicosmetics:
         # category_link = self.base_soup(self.url)
         # total_page = self.get_total(category_link)
 
-        for page in range(1, 10):
+        for page in range(1, 20):
             products.append(self.url + "?page=" + str(page))
             print("Start crawl link:" +
                   self.category[0] + "?page=" + str(page))
@@ -127,6 +127,7 @@ class Bicicosmetics:
             for image in images:
                 image_list.append("https:" + image.img["data-image"])
             product_detail["images"] = ",".join(image_list)
+            product_detail["image"] = image_list[0]
 
             product_detail["TenSP"] = detail.h1.string
             product_detail["Ma"] = sku.string
@@ -173,8 +174,9 @@ class Bicicosmetics:
                 except:
                     print(product)
                     continue
+        return arr_products
 
-        return self.format_json(arr_products)
+        # return self.format_json(arr_products)
 
     def format_json(self, products):
         print("**********************************************************")
